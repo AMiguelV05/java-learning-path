@@ -1,18 +1,18 @@
 import java.util.Scanner;
 
 public class Ej01Temperatura {
-    static final double CERO_ABSOLUTO = 213.15;
+    static final double CERO_ABSOLUTO = 273.15;
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         System.out.print("Temperatura en celsius a evaluar: ");
         double celsius = sc.nextDouble();
 
-        double farenheitIncorrecto = 9 / 5 * celsius + 32; // Falla debido a que por defecto, la división entre enteros arroja entero
-        double farenheitCorrecto = 9.0 / 5 * celsius + 32;
+        double fahrenheitIncorrecto = 9 / 5 * celsius + 32; // Falla debido a que por defecto, la división entre enteros arroja entero
+        double fahrenheitCorrecto = 9.0 / 5 * celsius + 32;
 
-        System.out.printf("Resultado erroneo °F: %.2f %n", farenheitIncorrecto);
-        System.out.printf("Resultado correcto °F: %.2f %n", farenheitCorrecto);
+        System.out.printf("Resultado erroneo °F: %.2f %n", fahrenheitIncorrecto);
+        System.out.printf("Resultado correcto °F: %.2f %n", fahrenheitCorrecto);
         System.out.printf("Resultado correcto K: %.2f %n", celsius + CERO_ABSOLUTO);
 
         sc.close();
@@ -33,5 +33,9 @@ public class Ej01Temperatura {
 
     3. Con la fórmula mala, ¿por qué 0 °C da el resultado correcto (32.00)? ¿Qué te enseña eso sobre cómo elegir valores para probar tu código?
     La división (que es la que nos da problema al dar resultado entero) ya no tiene peso en la formula al ser multiplicada por cero.
-    Para comprobar una solución, se deben tener múltiples casos de prueba que abarquen todos los posibles resultados.
+    Para comprobar una solución, se deben tener múltiples casos de prueba que abarquen casos inteligentes, ej:
+    Un valor común: 36.6
+    Valores frontera o especiales: 0, -40 (donde °C = °F), 100 (punto de ebullición)
+    Valores inválidos: abc, vacío
+    Al menos un caso donde sepas el resultado exacto de antemano
 */
