@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clase 1 · Java desde C++ y Python</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: cuaderno de laboratorio; una columna de lectura con bloques interactivos que se abren a ancho completo */
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --ink: #18212e;
+  --muted: #5a6677;
+  --line: #d8dee8;
+  --accent: #1d5fb0;      /* azul Java */
+  --accent-soft: #e3edf9;
+  --spark: #d9822b;       /* naranja taza de café */
+  --spark-soft: #fbeedd;
+  --good: #1f7a4d;
+  --bad: #b3322f;
+  --code-bg: #121a26;
+  --code-ink: #dbe4f0;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", Consolas, "Courier New", monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f141c; --surface: #18202c; --ink: #e6ecf4; --muted: #9aa8bb; --line: #2b3646;
+    --accent: #6fa8f0; --accent-soft: #1b2d45; --spark: #f0a35a; --spark-soft: #3a2a18;
+    --good: #5cc48f; --bad: #f07a76; --code-bg: #0a0f16; --code-ink: #dbe4f0;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f141c; --surface: #18202c; --ink: #e6ecf4; --muted: #9aa8bb; --line: #2b3646;
+  --accent: #6fa8f0; --accent-soft: #1b2d45; --spark: #f0a35a; --spark-soft: #3a2a18;
+  --good: #5cc48f; --bad: #f07a76; --code-bg: #0a0f16; --code-ink: #dbe4f0;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 20px 80px; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; }
+h2 { font-size: 1.6rem; font-weight: 800; }
+h3 { font-size: 1.15rem; font-weight: 600; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 16px; }
+.kicker { font-family: var(--font-mono); font-size: .8rem; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
+.lead { font-size: 1.12rem; color: var(--muted); }
+code, .mono { font-family: var(--font-mono); font-size: .92em; }
+p code, li code, td code { background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+.note { border-left: 4px solid var(--spark); background: var(--spark-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; }
+.note strong { color: var(--ink); }
+header.hero { display: grid; gap: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.meta { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font-size: .8rem; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+/* Línea de tiempo */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; border-left: 2px solid var(--line); margin-left: 6px; }
+.timeline li { position: relative; padding: 0 0 18px 22px; }
+.timeline li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--surface); border: 2px solid var(--accent); }
+.timeline li.lts::before { background: var(--spark); border-color: var(--spark); }
+.timeline .year { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+/* Animación del pipeline */
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; cursor: pointer; }
+.tab { border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 6px 14px; border-radius: 8px; font-weight: 600; }
+.tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:focus-visible { outline: 3px solid var(--spark); outline-offset: 2px; }
+.pipeline { display: flex; align-items: stretch; gap: 6px; overflow-x: auto; padding: 8px 2px 12px; }
+.node { flex: 1 0 120px; min-width: 120px; border: 2px solid var(--line); border-radius: 10px; padding: 10px; background: var(--surface); display: grid; gap: 4px; align-content: start; transition: border-color .3s, background .3s, transform .3s; }
+.node .icon { font-size: 1.4rem; }
+.node .name { font-family: var(--font-mono); font-weight: 600; font-size: .85rem; word-break: break-word; }
+.node .sub { font-size: .78rem; color: var(--muted); }
+.node.done { border-color: var(--accent); }
+.node.active { border-color: var(--spark); background: var(--spark-soft); transform: translateY(-3px); animation: pulse 1.2s ease-in-out infinite; }
+.arrow { align-self: center; color: var(--muted); font-size: 1.2rem; flex: 0 0 auto; transition: color .3s; }
+.arrow.done { color: var(--accent); }
+@keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(217,130,43,.45); } 50% { box-shadow: 0 0 0 8px rgba(217,130,43,0); } }
+.caption { min-height: 4.8em; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--accent); background: var(--surface); color: var(--accent); padding: 6px 14px; border-radius: 8px; font-weight: 600; }
+.btn.primary { background: var(--accent); color: #fff; }
+.stepcount { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+.os-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.os { border: 1px dashed var(--line); border-radius: 8px; padding: 8px 10px; font-size: .85rem; color: var(--muted); transition: all .4s; }
+.os.on { border-style: solid; border-color: var(--good); color: var(--ink); background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
+.os.off { border-color: var(--bad); color: var(--bad); }
+
+/* JDK > JRE > JVM */
+.nest { border: 2px solid var(--accent); border-radius: 12px; padding: 14px; display: grid; gap: 10px; background: var(--surface); }
+.nest .nest { border-color: var(--spark); background: var(--spark-soft); }
+.nest .nest .nest { border-color: var(--good); background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
+.nest-title { font-family: var(--font-mono); font-weight: 600; }
+.nest-body { font-size: .9rem; color: var(--muted); }
+
+/* Código anotado */
+pre { margin: 0; background: var(--code-bg); color: var(--code-ink); padding: 18px; border-radius: 10px; overflow-x: auto; font-family: var(--font-mono); font-size: .92rem; line-height: 1.7; }
+.kw { color: #7fb6ff; } .ty { color: #f0b46a; } .st { color: #9be39b; } .cm { color: #7d8a9c; font-style: italic; }
+.part { border-bottom: 2px dotted #f0b46a; cursor: pointer; border-radius: 3px; background: transparent; color: inherit; border-top: 0; border-left: 0; border-right: 0; padding: 0; font: inherit; }
+.part.sel { background: rgba(240,180,106,.22); }
+.explain { min-height: 5em; }
+
+/* Tablas */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; min-width: 560px; }
+th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; background: var(--accent-soft); }
+td:first-child { font-weight: 600; }
+td.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+
+/* Trampas */
+.traps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.trap { display: grid; gap: 8px; align-content: start; }
+.trap pre { font-size: .82rem; padding: 12px; }
+
+/* Quiz */
+.q { display: grid; gap: 10px; }
+.opts { display: grid; gap: 6px; }
+.opt { text-align: left; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 12px; border-radius: 8px; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--surface)); }
+.opt.wrong { border-color: var(--bad); background: color-mix(in srgb, var(--bad) 12%, var(--surface)); }
+.fb { font-size: .9rem; color: var(--muted); }
+.score { font-family: var(--font-mono); font-weight: 600; }
+
+/* Apuntes */
+ol.apuntes { margin: 0; padding-left: 1.4em; display: grid; gap: 8px; }
+ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .node, .arrow, .os { transition: none; }
+  .node.active { animation: none; transform: none; }
+}
+@media (max-width: 480px) { body { font-size: 16px; } .card { padding: 14px; } }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <span class="kicker">Clase 1 de 16 · Fase 1</span>
+  <h1>Java desde C++ y Python</h1>
+  <p class="lead">Ya sabes programar. Hoy no aprendes a programar otra vez: aprendes en qué se parece Java a lo que ya conoces, en qué es distinto, y por qué tantas empresas lo usan.</p>
+  <div class="meta"><span class="chip">⏱ ~40 min de lectura</span><span class="chip">📝 Toma apuntes en papel</span><span class="chip">🎯 Al final: quiz de 6 preguntas</span></div>
+</header>
+
+<section aria-labelledby="h-obj">
+  <h2 id="h-obj">Al terminar esta clase podrás…</h2>
+  <ul>
+    <li>Explicar qué pasa desde que escribes <code>Hola.java</code> hasta que la CPU lo ejecuta.</li>
+    <li>Distinguir <strong>JDK</strong>, <strong>JRE</strong> y <strong>JVM</strong> (pregunta clásica de entrevista).</li>
+    <li>Leer cada palabra de un <em>Hola Mundo</em> en Java y saber para qué sirve.</li>
+    <li>Evitar las 6 trampas en las que caen quienes vienen de C++ y Python.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="h-hist">
+  <span class="kicker">01 · Historia</span>
+  <h2 id="h-hist">Un lenguaje que nació para electrodomésticos</h2>
+  <p>Te va a gustar este dato por tu lado de IoT: Java nació en 1991 para programar <strong>aparatos electrónicos</strong>, como decodificadores de TV. El problema era que cada aparato tenía un chip distinto, y recompilar C++ para cada uno era un dolor. La solución fue compilar a un formato intermedio (<em>bytecode</em>) y poner en cada aparato una máquina virtual que lo entendiera.</p>
+  <ol class="timeline">
+    <li><span class="year">1991</span> · <strong>Green Project</strong> en Sun Microsystems. James Gosling crea un lenguaje llamado <em>Oak</em> (por un roble que veía desde su oficina).</li>
+    <li><span class="year">1995</span> · Se renombra a <strong>Java</strong> (por el café de la isla de Java, de ahí la taza del logo). Lema: <em>Write once, run anywhere</em>.</li>
+    <li><span class="year">2006</span> · Sun libera Java como código abierto: nace <strong>OpenJDK</strong>.</li>
+    <li><span class="year">2010</span> · <strong>Oracle compra Sun</strong>. Desde entonces Oracle es quien dirige Java. Por eso Java pesa tanto en sus entrevistas.</li>
+    <li class="lts"><span class="year">2014</span> · <strong>Java 8</strong>: llegan las lambdas y los Streams. El salto más grande en la historia del lenguaje. (Es la versión que tienes instalada ahorita.)</li>
+    <li><span class="year">2017</span> · Java empieza a sacar una versión nueva <strong>cada 6 meses</strong> (marzo y septiembre).</li>
+    <li class="lts"><span class="year">2021</span> · <strong>Java 17</strong>: <code>record</code>, <code>sealed</code>, <em>pattern matching</em>.</li>
+    <li class="lts"><span class="year">2023</span> · <strong>Java 21</strong>: <em>virtual threads</em>, miles de hilos ligeros para servidores.</li>
+    <li class="lts"><span class="year">2025</span> · <strong>Java 25</strong>: puedes escribir programas pequeños sin declarar clase. Es la versión LTS más reciente y <strong>la que vas a usar</strong>.</li>
+  </ol>
+  <p class="note"><strong>LTS = Long-Term Support.</strong> Las empresas casi solo usan versiones LTS (los puntos naranjas) porque reciben parches de seguridad durante años. En entrevistas te pueden preguntar "¿qué versión de Java usas y por qué?". Buena respuesta: "una LTS, como la 21 o la 25".</p>
+</section>
+
+<section aria-labelledby="h-anim">
+  <span class="kicker">02 · Animación</span>
+  <h2 id="h-anim">¿Cómo llega tu código a la CPU?</h2>
+  <p>Compara los tres lenguajes que conoces. Elige uno y dale <strong>Reproducir</strong> o avanza paso a paso.</p>
+  <div class="card" style="display:grid; gap:14px;">
+    <div class="tabs" role="tablist" aria-label="Lenguaje">
+      <button class="tab" role="tab" id="tab-cpp" aria-selected="false" data-lang="cpp">C++</button>
+      <button class="tab" role="tab" id="tab-py" aria-selected="false" data-lang="py">Python</button>
+      <button class="tab" role="tab" id="tab-java" aria-selected="true" data-lang="java">Java</button>
+    </div>
+    <div class="pipeline" id="pipeline" aria-live="off"></div>
+    <p class="caption" id="caption" aria-live="polite"></p>
+    <div class="os-row" id="osrow" aria-label="Sistemas operativos"></div>
+    <div class="controls">
+      <button class="btn" id="prev">← Anterior</button>
+      <button class="btn primary" id="play">▶ Reproducir</button>
+      <button class="btn" id="next">Siguiente →</button>
+      <span class="stepcount" id="stepcount"></span>
+    </div>
+  </div>
+  <p class="note"><strong>La idea clave:</strong> C++ se traduce una vez a código máquina de <em>un</em> sistema. Python se interpreta cada vez que corre. Java hace las dos cosas: compila a bytecode (portable) y luego la JVM, mientras corre, detecta el código que más se usa y lo convierte a código máquina optimizado. Eso es el <strong>JIT</strong> (<em>Just-In-Time compiler</em>), y por eso Java suele ser mucho más rápido que Python. Como estás llevando Compiladores, fíjate: <code>javac</code> es el <em>front-end</em> y el JIT es un <em>back-end</em> que corre en tiempo de ejecución.</p>
+</section>
+
+<section aria-labelledby="h-jdk">
+  <span class="kicker">03 · Vocabulario</span>
+  <h2 id="h-jdk">JDK, JRE y JVM: cajas dentro de cajas</h2>
+  <div class="nest">
+    <div class="nest-title">JDK · Java Development Kit</div>
+    <div class="nest-body">Todo lo que necesitas para <strong>programar</strong>: el compilador <code>javac</code>, el depurador, <code>jshell</code>, <code>javadoc</code>… y adentro, el JRE.</div>
+    <div class="nest">
+      <div class="nest-title">JRE · Java Runtime Environment</div>
+      <div class="nest-body">Lo necesario para <strong>ejecutar</strong> programas: las bibliotecas estándar (<code>String</code>, <code>ArrayList</code>, <code>HashMap</code>…) y la JVM.</div>
+      <div class="nest">
+        <div class="nest-title">JVM · Java Virtual Machine</div>
+        <div class="nest-body">El programa que lee bytecode, lo interpreta, lo compila con el JIT y administra la memoria con el <strong>recolector de basura</strong>.</div>
+      </div>
+    </div>
+  </div>
+  <p class="note"><strong>Tu caso concreto:</strong> en tu PC tienes un JRE de Java 8. Por eso <code>java -version</code> funciona, pero <code>javac</code> no existe. Te falta el JDK, y lo instalamos en el ejercicio 0.</p>
+</section>
+
+<section aria-labelledby="h-hola">
+  <span class="kicker">04 · Anatomía</span>
+  <h2 id="h-hola">Tu primer programa, palabra por palabra</h2>
+  <p>Toca cada parte subrayada para ver qué significa.</p>
+<pre aria-label="Código Hola.java"><span class="cm">// Archivo: Hola.java  (el nombre DEBE coincidir con la clase pública)</span>
+<button class="part" data-k="public">public</button> <button class="part" data-k="class"><span class="kw">class</span> <span class="ty">Hola</span></button> {
+    <button class="part" data-k="main"><span class="kw">public static void</span> main(<span class="ty">String</span>[] args)</button> {
+        <button class="part" data-k="var"><span class="ty">String</span> nombre = <span class="st">"Ingeniero"</span>;</button>
+        <button class="part" data-k="println">System.out.println(<span class="st">"Hola, "</span> + nombre);</button>
+    }
+}</pre>
+  <div class="card explain" id="explain" aria-live="polite"></div>
+<pre aria-label="Comandos para compilar y ejecutar"><span class="cm"># En la terminal:</span>
+javac Hola.java     <span class="cm"># crea Hola.class (bytecode)</span>
+java Hola           <span class="cm"># la JVM ejecuta la clase Hola</span>
+java Hola.java      <span class="cm"># atajo (Java 11+): compila en memoria y ejecuta</span></pre>
+  <p class="note"><strong>Novedad de Java 25:</strong> para programas chiquitos ya puedes escribir solo <code>void main() { IO.println("Hola"); }</code> sin declarar la clase. Es útil para practicar, pero en las empresas vas a ver la forma clásica en todos lados, así que primero aprende esa.</p>
+</section>
+
+<section aria-labelledby="h-comp">
+  <span class="kicker">05 · Comparación</span>
+  <h2 id="h-comp">Lo que ya sabes, traducido</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Concepto</th><th>C++</th><th>Python</th><th>Java</th></tr></thead>
+    <tbody>
+      <tr><td>Tipado</td><td>Estático</td><td>Dinámico</td><td><strong>Estático</strong>: declaras tipos, el compilador revisa (<code>var</code> infiere el tipo, pero sigue siendo estático)</td></tr>
+      <tr><td>Memoria</td><td>Manual (<code>new</code>/<code>delete</code>, punteros)</td><td>Automática</td><td><strong>Automática</strong>: haces <code>new</code>, nunca <code>delete</code>; el recolector de basura libera la memoria</td></tr>
+      <tr><td>Punteros</td><td>Sí, con aritmética</td><td>Todo es referencia</td><td>Primitivos por valor; objetos por <strong>referencia</strong>; sin aritmética de punteros</td></tr>
+      <tr><td>Dónde vive el código</td><td>Funciones sueltas o clases</td><td>Donde quieras</td><td><strong>Todo dentro de una clase</strong></td></tr>
+      <tr><td>Bloques</td><td><code>{ }</code></td><td>Indentación</td><td><code>{ }</code> y <code>;</code> como en C++</td></tr>
+      <tr><td>Herencia</td><td>Múltiple</td><td>Múltiple</td><td><strong>Simple</strong> (<code>extends</code> una clase) + muchas <code>interface</code></td></tr>
+      <tr><td>Listas</td><td><code>std::vector</code></td><td><code>list</code></td><td><code>ArrayList&lt;T&gt;</code></td></tr>
+      <tr><td>Diccionarios</td><td><code>std::unordered_map</code></td><td><code>dict</code></td><td><code>HashMap&lt;K,V&gt;</code></td></tr>
+      <tr><td>Errores</td><td>Excepciones (opcionales)</td><td>Excepciones</td><td>Excepciones, y algunas el compilador te <strong>obliga</strong> a manejarlas (<em>checked</em>)</td></tr>
+      <tr><td>Sobrecarga de operadores</td><td>Sí</td><td>Sí (<code>__add__</code>)</td><td><strong>No</strong>. Por eso existe <code>.equals()</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>Tipos primitivos (los 8 que existen)</h3>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Tipo</th><th>Tamaño</th><th>Ejemplo</th><th>Comentario</th></tr></thead>
+    <tbody>
+      <tr><td><code>byte</code></td><td class="num">8 bits</td><td><code>byte b = 127;</code></td><td>Útil para datos binarios, por ejemplo lo que manda un sensor</td></tr>
+      <tr><td><code>short</code></td><td class="num">16 bits</td><td><code>short s = 30000;</code></td><td>Casi no se usa</td></tr>
+      <tr><td><code>int</code></td><td class="num">32 bits</td><td><code>int n = 42;</code></td><td>El entero por defecto. Siempre 32 bits, en cualquier PC (en C++ depende de la plataforma)</td></tr>
+      <tr><td><code>long</code></td><td class="num">64 bits</td><td><code>long t = 1_700_000_000_000L;</code></td><td>Lleva <code>L</code> al final. Úsalo para timestamps</td></tr>
+      <tr><td><code>float</code></td><td class="num">32 bits</td><td><code>float f = 3.14f;</code></td><td>Lleva <code>f</code></td></tr>
+      <tr><td><code>double</code></td><td class="num">64 bits</td><td><code>double d = 3.14;</code></td><td>El decimal por defecto</td></tr>
+      <tr><td><code>char</code></td><td class="num">16 bits</td><td><code>char c = 'A';</code></td><td>Comillas simples. Es UTF-16, no ASCII de 8 bits como en C</td></tr>
+      <tr><td><code>boolean</code></td><td class="num">—</td><td><code>boolean ok = true;</code></td><td>No es un número: <code>if (1)</code> no compila</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Todo lo demás (<code>String</code>, arreglos, tus clases) es un <strong>objeto</strong> y se maneja por referencia.</p>
+</section>
+
+<section aria-labelledby="h-traps">
+  <span class="kicker">06 · Cuidado</span>
+  <h2 id="h-traps">6 trampas para quien viene de C++ y Python</h2>
+  <div class="traps">
+    <div class="card trap"><h3>1 · <code>==</code> con Strings</h3>
+<pre><span class="ty">String</span> a = <span class="kw">new</span> <span class="ty">String</span>(<span class="st">"hola"</span>);
+<span class="ty">String</span> b = <span class="kw">new</span> <span class="ty">String</span>(<span class="st">"hola"</span>);
+a == b       <span class="cm">// false 😱</span>
+a.equals(b)  <span class="cm">// true ✅</span></pre>
+      <p><code>==</code> compara <em>referencias</em> (si es el mismo objeto). Para comparar contenido usa <code>.equals()</code>. Es la pregunta de entrevista más común sobre Java.</p></div>
+    <div class="card trap"><h3>2 · División entera</h3>
+<pre><span class="kw">int</span> x = 7 / 2;        <span class="cm">// 3, no 3.5</span>
+<span class="kw">double</span> y = 7 / 2;     <span class="cm">// 3.0 😱</span>
+<span class="kw">double</span> z = 7 / 2.0;   <span class="cm">// 3.5 ✅</span></pre>
+      <p>Igual que en C++. En Python, <code>/</code> siempre da decimal; aquí no.</p></div>
+    <div class="card trap"><h3>3 · Strings inmutables</h3>
+<pre><span class="ty">String</span> s = <span class="st">""</span>;
+<span class="kw">for</span> (...) s += x;  <span class="cm">// lento: crea un String nuevo cada vez</span>
+<span class="ty">StringBuilder</span> sb = <span class="kw">new</span> <span class="ty">StringBuilder</span>();
+<span class="kw">for</span> (...) sb.append(x); <span class="cm">// ✅</span></pre>
+      <p>Un <code>String</code> nunca cambia. Para construir texto dentro de un ciclo usa <code>StringBuilder</code>.</p></div>
+    <div class="card trap"><h3>4 · Arreglos de tamaño fijo</h3>
+<pre><span class="kw">int</span>[] a = <span class="kw">new int</span>[5];   <span class="cm">// no crece</span>
+a.length                  <span class="cm">// sin ()</span>
+<span class="ty">ArrayList</span>&lt;<span class="ty">Integer</span>&gt; l = <span class="kw">new</span> <span class="ty">ArrayList</span>&lt;&gt;();
+l.size()                  <span class="cm">// con ()</span></pre>
+      <p>Si necesitas que crezca, como una lista de Python, usa <code>ArrayList</code>. Fíjate que se escribe <code>Integer</code> y no <code>int</code>: las colecciones solo guardan objetos.</p></div>
+    <div class="card trap"><h3>5 · Desbordamiento silencioso</h3>
+<pre><span class="kw">int</span> big = <span class="ty">Integer</span>.MAX_VALUE;
+big + 1   <span class="cm">// -2147483648 😱</span></pre>
+      <p>En Python los enteros crecen sin límite. En Java no: dan la vuelta sin avisar. Es un error típico en problemas de entrevista (por ejemplo, <code>(lo + hi) / 2</code>).</p></div>
+    <div class="card trap"><h3>6 · <code>char</code> ≠ <code>String</code></h3>
+<pre><span class="kw">char</span> c = <span class="st">'a'</span>;     <span class="cm">// comillas simples</span>
+<span class="ty">String</span> s = <span class="st">"a"</span>;   <span class="cm">// comillas dobles</span>
+s.charAt(0) == c   <span class="cm">// true</span></pre>
+      <p>En Python <code>'a'</code> y <code>"a"</code> son lo mismo. En Java son tipos distintos.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-quiz">
+  <span class="kicker">07 · Comprueba</span>
+  <h2 id="h-quiz">Quiz rápido</h2>
+  <p>Sin ver arriba. Si fallas una, regresa a esa sección antes de los ejercicios. <span class="score" id="score">0 / 6</span></p>
+  <div id="quiz" style="display:grid; gap:14px;"></div>
+</section>
+
+<section aria-labelledby="h-notes">
+  <span class="kicker">08 · Para tus apuntes</span>
+  <h2 id="h-notes">Resumen en 10 líneas</h2>
+  <div class="card">
+  <ol class="apuntes">
+    <li>Java nació en 1991 (Sun) para electrodomésticos; Oracle lo dirige desde 2010.</li>
+    <li>Flujo: <code>.java</code> → <code>javac</code> → <code>.class</code> (bytecode) → JVM → intérprete + JIT → CPU.</li>
+    <li>El bytecode es portable: <em>write once, run anywhere</em>.</li>
+    <li>JDK ⊃ JRE ⊃ JVM. Para programar necesitas el JDK.</li>
+    <li>Usa versiones LTS: 21 o 25.</li>
+    <li>Tipado estático, memoria automática (recolector de basura), todo dentro de clases.</li>
+    <li>8 primitivos (<code>byte short int long float double char boolean</code>); todo lo demás es objeto por referencia.</li>
+    <li>Strings: compáralos con <code>.equals()</code>; para concatenar en ciclos usa <code>StringBuilder</code>.</li>
+    <li>Arreglo = tamaño fijo (<code>.length</code>); <code>ArrayList</code> = dinámico (<code>.size()</code>).</li>
+    <li>Herencia simple con <code>extends</code> + múltiples <code>interface</code>.</li>
+  </ol>
+  </div>
+  <p class="note"><strong>Siguiente paso:</strong> abre <code>semana-01/README.md</code> en tu carpeta <em>Aprendiendo Java</em> y empieza por el ejercicio 0 (instalar el JDK 25).</p>
+</section>
+
+</main>
+
+<script>
+(function () {
+  // ---------- Animación del pipeline ----------
+  const data = {
+    cpp: {
+      nodes: [
+        { i: "📄", n: "hola.cpp", s: "código fuente" },
+        { i: "⚙️", n: "g++", s: "compilador" },
+        { i: "📦", n: "hola.exe", s: "código máquina x86-64 para Windows" },
+        { i: "🧠", n: "CPU", s: "ejecuta directo" }
+      ],
+      caps: [
+        "Escribes hola.cpp, texto que tú entiendes y la computadora no.",
+        "g++ traduce TODO el programa, una sola vez, a instrucciones de una CPU y un sistema operativo específicos.",
+        "Resultado: un ejecutable nativo. Es muy rápido, pero solo funciona en el sistema para el que lo compilaste.",
+        "La CPU lo ejecuta directo, sin intermediarios. Pero si quieres correrlo en Linux o en Mac, tienes que recompilar."
+      ],
+      os: [["Windows", true], ["Linux", false], ["macOS", false]]
+    },
+    py: {
+      nodes: [
+        { i: "📄", n: "hola.py", s: "código fuente" },
+        { i: "🐍", n: "python", s: "intérprete CPython" },
+        { i: "🧩", n: "bytecode", s: ".pyc, generado cada vez que corres" },
+        { i: "🔁", n: "VM de Python", s: "interpreta instrucción por instrucción" },
+        { i: "🧠", n: "CPU", s: "" }
+      ],
+      caps: [
+        "Escribes hola.py.",
+        "Cada vez que ejecutas, el intérprete lee tu archivo; no hay paso de compilación aparte.",
+        "Python también genera bytecode, pero lo hace en el momento y casi nunca lo ves.",
+        "La máquina virtual interpreta cada instrucción una por una. Es flexible, pero lento: no convierte nada a código máquina optimizado.",
+        "Funciona en cualquier sistema que tenga Python instalado, pero los errores de tipos aparecen hasta que esa línea se ejecuta."
+      ],
+      os: [["Windows", true], ["Linux", true], ["macOS", true]]
+    },
+    java: {
+      nodes: [
+        { i: "📄", n: "Hola.java", s: "código fuente" },
+        { i: "⚙️", n: "javac", s: "compilador: revisa tipos" },
+        { i: "☕", n: "Hola.class", s: "bytecode portable" },
+        { i: "🖥️", n: "JVM", s: "intérprete + JIT + recolector de basura" },
+        { i: "🧠", n: "CPU", s: "código máquina optimizado" }
+      ],
+      caps: [
+        "Escribes Hola.java. El archivo debe llamarse igual que la clase pública que contiene.",
+        "javac compila y revisa tipos ANTES de ejecutar: muchos errores que en Python verías hasta correr el programa aquí aparecen al compilar.",
+        "El resultado es Hola.class: bytecode, instrucciones para una CPU imaginaria (la JVM). No depende del sistema operativo.",
+        "La JVM empieza interpretando el bytecode. Cuando detecta un método que se usa mucho (código caliente), el JIT lo compila a código máquina y lo optimiza mientras corre.",
+        "El mismo Hola.class corre en Windows, Linux, macOS o en un servidor de Oracle Cloud, sin recompilar. Eso es 'write once, run anywhere'."
+      ],
+      os: [["Windows", true], ["Linux", true], ["macOS", true]]
+    }
+  };
+  let lang = "java", step = 0, timer = null;
+  const $ = (id) => document.getElementById(id);
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function render() {
+    const d = data[lang];
+    const pipe = $("pipeline");
+    pipe.innerHTML = "";
+    d.nodes.forEach((nd, k) => {
+      if (k > 0) {
+        const a = document.createElement("span");
+        a.className = "arrow" + (k <= step ? " done" : "");
+        a.textContent = "→";
+        a.setAttribute("aria-hidden", "true");
+        pipe.appendChild(a);
+      }
+      const el = document.createElement("div");
+      el.className = "node" + (k < step ? " done" : "") + (k === step ? " active" : "");
+      el.innerHTML = '<span class="icon" aria-hidden="true">' + nd.i + '</span><span class="name">' + nd.n + '</span><span class="sub">' + nd.s + '</span>';
+      pipe.appendChild(el);
+    });
+    $("caption").textContent = d.caps[step];
+    $("stepcount").textContent = "Paso " + (step + 1) + " / " + d.nodes.length;
+    const last = step === d.nodes.length - 1;
+    const osrow = $("osrow");
+    osrow.innerHTML = "";
+    d.os.forEach(([name, ok]) => {
+      const o = document.createElement("div");
+      o.className = "os" + (last ? (ok ? " on" : " off") : "");
+      o.textContent = (last ? (ok ? "✅ " : "❌ ") : "◻️ ") + name + (last ? (ok ? " · corre" : " · hay que recompilar") : "");
+      osrow.appendChild(o);
+    });
+    document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.lang === lang)));
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } $("play").textContent = "▶ Reproducir"; }
+  function play() {
+    if (timer) { stop(); return; }
+    if (step >= data[lang].nodes.length - 1) step = 0;
+    render();
+    $("play").textContent = "⏸ Pausa";
+    timer = setInterval(() => {
+      if (step < data[lang].nodes.length - 1) { step++; render(); }
+      else stop();
+    }, reduce ? 3500 : 2600);
+  }
+  $("next").addEventListener("click", () => { stop(); step = Math.min(step + 1, data[lang].nodes.length - 1); render(); });
+  $("prev").addEventListener("click", () => { stop(); step = Math.max(step - 1, 0); render(); });
+  $("play").addEventListener("click", play);
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { stop(); lang = t.dataset.lang; step = 0; render(); }));
+  render();
+
+  // ---------- Anatomía del Hola Mundo ----------
+  const parts = {
+    public: "<strong>public</strong>: modificador de acceso. Cualquier otra clase puede usar esta clase. Por regla, el archivo <code>.java</code> se llama igual que su clase pública.",
+    class: "<strong>class Hola</strong>: en Java todo vive dentro de una clase, incluso un programa de una línea. Por convención los nombres de clase van en <code>PascalCase</code>.",
+    main: "<strong>public static void main(String[] args)</strong>: el punto de entrada, como <code>int main(int argc, char** argv)</code> en C++. <em>static</em> quiere decir que pertenece a la clase y no a un objeto (la JVM la llama sin crear un <code>Hola</code>). <em>void</em> quiere decir que no regresa nada. <em>args</em> son los argumentos de la terminal.",
+    var: "<strong>String nombre = \"Ingeniero\";</strong>: declaras el tipo antes del nombre, como en C++. <code>String</code> va con mayúscula porque es una clase, no un primitivo. Toda instrucción termina en <code>;</code>.",
+    println: "<strong>System.out.println(...)</strong>: <code>System</code> es una clase, <code>out</code> es su atributo estático (la salida estándar) y <code>println</code> imprime y agrega un salto de línea. El <code>+</code> concatena Strings. Equivale al <code>print()</code> de Python o al <code>std::cout &lt;&lt; ... &lt;&lt; std::endl</code> de C++."
+  };
+  const ex = $("explain");
+  function showPart(k) {
+    ex.innerHTML = parts[k];
+    document.querySelectorAll(".part").forEach(p => p.classList.toggle("sel", p.dataset.k === k));
+  }
+  document.querySelectorAll(".part").forEach(p => p.addEventListener("click", () => showPart(p.dataset.k)));
+  showPart("main");
+
+  // ---------- Quiz ----------
+  const qs = [
+    { q: "¿Qué genera javac a partir de Hola.java?", o: ["Un .exe nativo", "Hola.class con bytecode", "Código Python"], a: 1, e: "javac produce bytecode (.class); la JVM lo ejecuta." },
+    { q: "Instalaste solo el JRE. ¿Qué NO puedes hacer?", o: ["Ejecutar un .class", "Compilar un .java", "Usar ArrayList al ejecutar"], a: 1, e: "El compilador javac viene en el JDK, no en el JRE." },
+    { q: "¿Qué hace el JIT?", o: ["Libera memoria", "Convierte bytecode muy usado a código máquina mientras el programa corre", "Revisa tipos antes de compilar"], a: 1, e: "Just-In-Time: compila el código caliente en tiempo de ejecución." },
+    { q: "a y b son Strings con el mismo texto. ¿Cómo compruebas que el contenido es igual?", o: ["a == b", "a.equals(b)", "a === b"], a: 1, e: "== compara referencias; .equals() compara contenido." },
+    { q: "¿Cuánto vale double r = 9 / 2; ?", o: ["4.5", "4.0", "Error de compilación"], a: 1, e: "9 / 2 es división entera (4) y luego se convierte a 4.0." },
+    { q: "¿Qué versión de Java conviene para un proyecto de empresa hoy?", o: ["La más nueva, aunque no sea LTS", "Una LTS como 21 o 25", "Java 8, porque es la más usada"], a: 1, e: "Las LTS reciben parches de seguridad durante años." }
+  ];
+  let score = 0;
+  const quiz = $("quiz");
+  qs.forEach((item, qi) => {
+    const box = document.createElement("div");
+    box.className = "card q";
+    box.innerHTML = '<h3>' + (qi + 1) + '. ' + item.q + '</h3>';
+    const opts = document.createElement("div"); opts.className = "opts";
+    const fb = document.createElement("p"); fb.className = "fb"; fb.textContent = "Elige una opción.";
+    let answered = false;
+    item.o.forEach((txt, oi) => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.textContent = txt; b.id = "q" + qi + "o" + oi;
+      b.addEventListener("click", () => {
+        if (answered) return;
+        answered = true;
+        if (oi === item.a) { b.classList.add("right"); score++; fb.textContent = "✅ Correcto. " + item.e; }
+        else { b.classList.add("wrong"); opts.children[item.a].classList.add("right"); fb.textContent = "❌ Casi. " + item.e; }
+        $("score").textContent = score + " / " + qs.length;
+      });
+      opts.appendChild(b);
+    });
+    box.appendChild(opts); box.appendChild(fb);
+    quiz.appendChild(box);
+  });
+})();
+</script>
+</body>
+</html>

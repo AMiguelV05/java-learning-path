@@ -1,0 +1,13 @@
+# Java compilado
+*.class
+out/
+target/
+build/
+
+# IntelliJ
+.idea/
+*.iml
+
+# Sistema
+.DS_Store
+Thumbs.db
